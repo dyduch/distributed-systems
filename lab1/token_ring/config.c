@@ -1,7 +1,3 @@
-//
-// Created by dyduch on 3/11/19.
-//
-
 #include <time.h>
 #include "config.h"
 

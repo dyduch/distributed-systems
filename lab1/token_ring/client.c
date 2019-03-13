@@ -1,8 +1,3 @@
-//
-// Created by dyduch on 3/10/19.
-//
-
-
 #include <unistd.h>
 #include <time.h>
 #include "config.h"

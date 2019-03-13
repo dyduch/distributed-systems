@@ -1,7 +1,3 @@
-//
-// Created by dyduch on 3/12/19.
-//
-
 #ifndef TOKEN_RING_UDP_UTILS_H
 #define TOKEN_RING_UDP_UTILS_H
 

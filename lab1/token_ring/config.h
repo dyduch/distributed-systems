@@ -1,7 +1,3 @@
-//
-// Created by dyduch on 3/11/19.
-//
-
 #ifndef TOKEN_RING_CONFIG_H
 #define TOKEN_RING_CONFIG_H
 

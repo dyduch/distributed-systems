@@ -1,7 +1,3 @@
-//
-// Created by dyduch on 3/12/19.
-//
-
 #include "udp_utils.h"
 
 void init_my_socket(struct sockaddr_in* sockaddr_in, uint16_t port){
