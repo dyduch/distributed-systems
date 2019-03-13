@@ -1,0 +1,46 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/dyduch/Studies/SEM6/SR/lab1/token_ring/client.c
+unistd.h
+-
+time.h
+-
+config.h
+/home/dyduch/Studies/SEM6/SR/lab1/token_ring/config.h
+udp/udp_utils.h
+/home/dyduch/Studies/SEM6/SR/lab1/token_ring/udp/udp_utils.h
+
+/home/dyduch/Studies/SEM6/SR/lab1/token_ring/config.h
+stdint.h
+-
+stdio.h
+-
+sys/socket.h
+-
+netinet/in.h
+-
+string.h
+-
+stdlib.h
+-
+arpa/inet.h
+-
+ctype.h
+-
+stdbool.h
+-
+signal.h
+-
+stdbool.h
+-
+
+/home/dyduch/Studies/SEM6/SR/lab1/token_ring/udp/udp_utils.h
+../config.h
+/home/dyduch/Studies/SEM6/SR/lab1/token_ring/config.h
+
