@@ -31,10 +31,6 @@
 
 #define SLEEP_TIME 2
 
-int taken_ports[MAX_CLIENTS_AMOUNT];
-
-int network_size;
-
 struct token {
     int type;
     uint16_t to;
@@ -44,9 +40,6 @@ struct token {
     char msg[500];
 };
 
-int take_port(uint16_t);
-
-void release_port(uint16_t);
 
 uint16_t calculate_receiver();
 

@@ -5,44 +5,7 @@
 #include <time.h>
 #include "config.h"
 
-int network_size = 0;
 
-int taken_ports[MAX_CLIENTS_AMOUNT] = { 0 };
-
-int take_port(uint16_t port){
-    if(taken_ports[port - MIN_PORT_NUMBER] == 0){
-        taken_ports[port - MIN_PORT_NUMBER] = 1;
-        network_size += 1;
-        return 0;
-    } else
-        return -1;
-}
-
-void release_port(uint16_t port){
-    taken_ports[port - MIN_PORT_NUMBER] = 0;
-    network_size -= 1;
-}
-
-uint16_t calculate_receiver(){
-    printf("\n");
-
-    for(int i = 0; i < MAX_CLIENTS_AMOUNT; i++){
-        printf("%d: %d\n", (i + MIN_PORT_NUMBER), taken_ports[i]);
-    }
-
-    printf("\n");
-
-
-    srand((unsigned int) time(NULL));
-    int random = rand()%network_size;
-    for(int i = 0; i < MAX_CLIENTS_AMOUNT; i++){
-        if(taken_ports[i] == 1 && random == 0)
-            return (uint16_t) (i + MIN_PORT_NUMBER);
-        else if(taken_ports[i] == 1 && random > 0)
-            random -= 1;
-    }
-    return 0;
-}
 
 struct token get_msg_token(char* id, uint16_t sender_port, uint16_t receiver_port, char* msg){
 
