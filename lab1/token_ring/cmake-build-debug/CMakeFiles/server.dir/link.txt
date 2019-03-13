@@ -1,1 +1,0 @@
-/usr/bin/cc -g   CMakeFiles/server.dir/udp_server.c.o  -o server 

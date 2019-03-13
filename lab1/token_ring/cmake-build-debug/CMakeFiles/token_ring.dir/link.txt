@@ -1,1 +1,0 @@
-/usr/bin/cc -g   CMakeFiles/token_ring.dir/udp_client.c.o CMakeFiles/token_ring.dir/udp_server.c.o  -o token_ring 
