@@ -2,6 +2,7 @@
 #include <time.h>
 #include "config.h"
 #include "udp/udp_utils.h"
+#include "tcp/tcp_utils.h"
 
 void init_client(int argc, char **argv);
 
@@ -17,6 +18,9 @@ struct sockaddr_in my_addr;
 struct sockaddr_in next_addr;
 
 int udp_socket;
+int tcp_snd_socket;
+int tcp_rcv_socket;
+int tcp_socket;
 
 int running = 1;
 
@@ -25,7 +29,7 @@ int network_size = 0;
 
 
 void int_handler(int);
-
+char* randstring(size_t);
 
 int main(int argc, char **argv) {
 
@@ -95,12 +99,12 @@ int main(int argc, char **argv) {
                     sendto(udp_socket, &recv_token, sizeof(recv_token), 0,
                            (struct sockaddr *) &next_addr, sizeof(next_addr));
                 } else {
-                    printf("\n[MSG_TOKEN] from %s:%d!\n"
+                    char* msg = randstring(10);
+                        printf("\n[MSG_TOKEN] from %s:%d!\n"
                            "[MSG_TOKEN] text: %s\n"
-                           "[MSG_TOKEN] SENDING new message to: %d\n\n", recv_token.sender_id,
-                           recv_token.from, recv_token.msg, calculate_receiver());
+                           "[MSG_TOKEN] SENDING new message {%s} to: %d\n\n", recv_token.sender_id,
+                           recv_token.from, recv_token.msg, msg, calculate_receiver());
 
-                    char msg[] = "Random message";
                     recv_token = get_msg_token(client_id, my_port, calculate_receiver(), msg);
                     sendto(udp_socket, &recv_token, sizeof(recv_token), 0,
                            (struct sockaddr *) &next_addr, sizeof(next_addr));
@@ -132,6 +136,126 @@ int main(int argc, char **argv) {
         }
 
 
+    }
+
+    else if (protocol_type == TCP) {
+
+        tcp_rcv_socket = socket(AF_INET, SOCK_STREAM, 0);
+        tcp_init_my_socket(&my_addr, my_port);
+        bind(tcp_rcv_socket, (const struct sockaddr *) &my_addr, sizeof(my_addr));
+        listen(tcp_rcv_socket, 10);
+
+        tcp_snd_socket = socket(AF_INET, SOCK_STREAM, 0);
+
+        struct token init_token = get_init_token(client_id, my_port, next_client_port);
+        tcp_snd_socket = socket(AF_INET, SOCK_STREAM, 0);
+
+        next_addr.sin_family = AF_INET;
+        next_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+        next_addr.sin_port = htons(next_client_port);
+        connect(tcp_snd_socket, (const struct sockaddr *) &next_addr, sizeof(next_addr));
+
+        write(tcp_snd_socket, &init_token, sizeof(init_token));
+        close(tcp_snd_socket);
+
+        if(has_token_initially){
+            struct token token = get_msg_token(client_id, my_port, my_port, NULL);
+
+            tcp_snd_socket = socket(AF_INET, SOCK_STREAM, 0);
+
+            next_addr.sin_family = AF_INET;
+            next_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+            next_addr.sin_port = htons(next_client_port);
+            connect(tcp_snd_socket, (const struct sockaddr *) &next_addr,
+                    sizeof(next_addr));
+
+            write(tcp_snd_socket, &token, sizeof(token));
+            close(tcp_snd_socket);
+
+        }
+
+        while (running) {
+
+            struct token recv_token;
+
+            tcp_socket = accept(tcp_rcv_socket, NULL, NULL);
+            read(tcp_socket, &recv_token, sizeof(recv_token));
+
+            sleep(SLEEP_TIME);
+            printf("[%s:%d] [%li]", client_id, my_port, time(NULL));
+
+            if (taken_ports[recv_token.from - MIN_PORT_NUMBER] == 0 &&
+                (recv_token.type == INIT_TOKEN || recv_token.type == MSG_TOKEN)) {
+                taken_ports[recv_token.from - MIN_PORT_NUMBER] = 1;
+                network_size++;
+            }
+
+            if (recv_token.type == INIT_TOKEN) {
+
+                printf("\n[INIT_TOKEN] from: %s:%d!\n"
+                       "[INIT_TOKEN] Receiver: %d\n", recv_token.sender_id, recv_token.from,
+                       recv_token.to);
+                if (recv_token.from == my_port) {
+                    printf("[INIT_TOKEN] travelled network - REMOVING\n\n");
+                } else {
+                    if (recv_token.my_next_client_port == next_client_port) {
+                        printf("[INIT_TOKEN] new client connects in my place - RESTRUCTURING NETWORK - forwarding to: %d\n\n",
+                               recv_token.to);
+
+                        tcp_snd_socket = socket(AF_INET, SOCK_STREAM, 0);
+                        tcp_setup_successor(&next_addr, next_client_ip, next_client_port);
+                        connect(tcp_snd_socket, (const struct sockaddr *) &next_addr,
+                                sizeof(next_addr));
+                        write(tcp_snd_socket, &recv_token, sizeof(recv_token));
+                        close(tcp_snd_socket);
+
+                        next_client_port = recv_token.from;
+                        next_addr.sin_port = htons(next_client_port);
+                    } else {
+                        printf("[INIT_TOKEN] FORWARDING to port: %d\n\n", next_client_port);
+                        tcp_snd_socket = socket(AF_INET, SOCK_STREAM, 0);
+                        tcp_setup_successor(&next_addr, next_client_ip, next_client_port);
+                        connect(tcp_snd_socket, (const struct sockaddr *) &next_addr,
+                                sizeof(next_addr));
+                        write(tcp_snd_socket, &recv_token, sizeof(recv_token));
+                        close(tcp_snd_socket);
+
+                    }
+                }
+            } else if (recv_token.type == MSG_TOKEN) {
+                if (recv_token.to != my_port) {
+                    printf("\n[MSG_TOKEN] msg not to me - FORWARDING to port: %d\n\n",
+                           next_client_port);
+
+                    tcp_snd_socket = socket(AF_INET, SOCK_STREAM, 0);
+                    tcp_setup_successor(&next_addr, next_client_ip, next_client_port);
+                    connect(tcp_snd_socket, (const struct sockaddr *) &next_addr,
+                            sizeof(next_addr));
+
+                    write(tcp_snd_socket, &recv_token, sizeof(recv_token));
+                    close(tcp_snd_socket);
+
+
+                } else {
+                    char *msg = randstring(10);
+                    printf("\n[MSG_TOKEN] from %s:%d!\n"
+                           "[MSG_TOKEN] text: %s\n"
+                           "[MSG_TOKEN] SENDING new message {%s} to: %d\n\n", recv_token.sender_id,
+                           recv_token.from, recv_token.msg, msg, calculate_receiver());
+
+                    recv_token = get_msg_token(client_id, my_port, calculate_receiver(), msg);
+                    tcp_snd_socket = socket(AF_INET, SOCK_STREAM, 0);
+                    tcp_setup_successor(&next_addr, next_client_ip, next_client_port);
+                    connect(tcp_snd_socket, (const struct sockaddr *) &next_addr,
+                            sizeof(next_addr));
+
+                    write(tcp_snd_socket, &recv_token, sizeof(recv_token));
+                    close(tcp_snd_socket);
+                }
+            }
+
+
+        }
     }
 
     return 0;
@@ -198,12 +322,14 @@ void init_client(int argc, char **argv) {
 
 void int_handler(int signum) { // no idea why it works but works ... sometimes
 
-    struct token token = get_term_token(client_id, my_port, next_client_port);
-    sendto(udp_socket, &token, sizeof(token), 0, (struct sockaddr *) &next_addr, sizeof(next_addr));
+    if (protocol_type == UDP) {
+        struct token token = get_term_token(client_id, my_port, next_client_port);
+        sendto(udp_socket, &token, sizeof(token), 0, (struct sockaddr *) &next_addr,
+               sizeof(next_addr));
 
-    struct token recv_token;
-    recvfrom(udp_socket, &recv_token, sizeof(recv_token), 0, NULL, NULL);
-
+        struct token recv_token;
+        recvfrom(udp_socket, &recv_token, sizeof(recv_token), 0, NULL, NULL);
+    }
 
     exit(1);
 }
@@ -219,5 +345,24 @@ uint16_t calculate_receiver() {
             random -= 1;
     }
     return my_port;
+}
+
+char* randstring(size_t length) {
+
+    static char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,.-#'?!";
+    char *random_string = NULL;
+
+    if (length) {
+        random_string = malloc(sizeof(char) * (length +1));
+
+        if (random_string) {
+            for (int n = 0;n < length;n++) {
+                int key = rand() % (int)(sizeof(charset) -1);
+                random_string[n] = charset[key];
+            }
+            random_string[length] = '\0';
+        }
+    }
+    return random_string;
 }
 

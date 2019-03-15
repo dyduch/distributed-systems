@@ -2,7 +2,6 @@
 #include "config.h"
 
 
-
 struct token get_msg_token(char* id, uint16_t sender_port, uint16_t receiver_port, char* msg){
 
     struct token token;

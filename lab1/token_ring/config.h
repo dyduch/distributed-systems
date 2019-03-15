@@ -12,6 +12,8 @@
 #include <stdbool.h>
 #include <signal.h>
 #include <stdbool.h>
+#include <unistd.h>
+
 
 #define LOCALHOST "127.0.0.1"
 
