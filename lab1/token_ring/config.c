@@ -41,5 +41,11 @@ struct token get_term_token(char* id, uint16_t own_port, uint16_t next_port){
     return term_token;
 }
 
+void send_to_logger(char* log, struct sockaddr_in* logaddr, int logsocket){
+
+    size_t size = (strlen(log) * sizeof(char));
+    sendto(logsocket, log, size, 0, (const struct sockaddr *) &logaddr, sizeof(logaddr));
+}
+
 
 

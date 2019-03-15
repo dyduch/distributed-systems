@@ -5,6 +5,7 @@
 #include "tcp/tcp_utils.h"
 
 void init_client(int argc, char **argv);
+void init_logger();
 
 // client parameters
 char *client_id;
@@ -16,6 +17,10 @@ int protocol_type;
 
 struct sockaddr_in my_addr;
 struct sockaddr_in next_addr;
+struct sockaddr_in logger_addr;
+int logger_socket;
+
+
 
 int udp_socket;
 int tcp_snd_socket;
@@ -27,6 +32,9 @@ int running = 1;
 int taken_ports[MAX_CLIENTS_AMOUNT] = {0};
 int network_size = 0;
 
+char* logger_ip = "237.7.0.1";
+uint16_t logger_port = 8999;
+
 
 void int_handler(int);
 char* randstring(size_t);
@@ -34,6 +42,7 @@ char* randstring(size_t);
 int main(int argc, char **argv) {
 
     init_client(argc, argv);
+    init_logger();
 
     signal(SIGINT, int_handler);
 
@@ -93,6 +102,9 @@ int main(int argc, char **argv) {
                     }
                 }
             } else if (recv_token.type == MSG_TOKEN) {
+
+                send_to_logger(client_id, &logger_addr, logger_socket);
+
                 if (recv_token.to != my_port) {
                     printf("\n[MSG_TOKEN] msg not to me - FORWARDING to port: %d\n\n",
                            next_client_port);
@@ -223,6 +235,9 @@ int main(int argc, char **argv) {
                     }
                 }
             } else if (recv_token.type == MSG_TOKEN) {
+
+                send_to_logger(client_id, &logger_addr, logger_socket);
+
                 if (recv_token.to != my_port) {
                     printf("\n[MSG_TOKEN] msg not to me - FORWARDING to port: %d\n\n",
                            next_client_port);
@@ -259,6 +274,14 @@ int main(int argc, char **argv) {
     }
 
     return 0;
+}
+
+void init_logger(){
+    logger_socket = socket(AF_INET, SOCK_DGRAM, 0);
+
+    logger_addr.sin_family = AF_INET;
+    logger_addr.sin_addr.s_addr = inet_addr(logger_ip);
+    logger_addr.sin_port = htons(logger_port);
 }
 
 void init_client(int argc, char **argv) {

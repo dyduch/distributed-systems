@@ -47,4 +47,6 @@ struct token get_init_token(char*, uint16_t, uint16_t);
 
 struct token get_term_token(char*, uint16_t, uint16_t);
 
+void send_to_logger(char*, struct sockaddr_in*, int);
+
 #endif //TOKEN_RING_CONFIG_H
