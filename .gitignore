@@ -117,3 +117,10 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# not part of projects
+*Dyduch_Dominik*
+lab1/lab_gniazda/
+lab1/*.pdf
+*.idea/
+
