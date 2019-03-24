@@ -123,4 +123,5 @@ dkms.conf
 lab1/lab_gniazda/
 lab1/*.pdf
 *.idea/
+lab2/VirtualSynchronyLab/
 
