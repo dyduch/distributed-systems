@@ -13,7 +13,11 @@ public class CommandParser {
         } else if(args.length == 2) {
             return new Command(CommandType.fromString(args[0]), args[1]);
         } else if(args.length == 3){
-            return new Command(CommandType.fromString(args[0]), args[1], Integer.parseInt(args[2]));
+            try {
+                return new Command(CommandType.fromString(args[0]), args[1], Integer.parseInt(args[2]));
+            } catch (NumberFormatException e) {
+                return new Command(CommandType.UNRECOGNIZED);
+            }
         } else {
             return new Command(CommandType.UNRECOGNIZED);
         }
