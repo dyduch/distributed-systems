@@ -23,9 +23,7 @@ public class Channel extends JChannel {
                 .addProtocol(new PING())
                 .addProtocol(new MERGE3())
                 .addProtocol(new FD_SOCK())
-                .addProtocol(new FD_ALL()
-                        .setValue("timeout", 12000)
-                        .setValue("interval", 3000))
+                .addProtocol(new FD_ALL().setValue("timeout", 12000).setValue("interval", 3000))
                 .addProtocol(new VERIFY_SUSPECT())
                 .addProtocol(new BARRIER())
                 .addProtocol(new NAKACK2())
@@ -35,8 +33,7 @@ public class Channel extends JChannel {
                 .addProtocol(new UFC())
                 .addProtocol(new MFC())
                 .addProtocol(new FRAG2())
-                .addProtocol(new SEQUENCER())
-                .addProtocol(new FLUSH());
+                .addProtocol(new STATE());
 
         stack.init();
     }

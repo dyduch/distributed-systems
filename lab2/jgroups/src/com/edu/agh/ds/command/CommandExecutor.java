@@ -10,6 +10,7 @@ public class CommandExecutor {
     private final DistributedMap state;
     private Channel channel;
     private final CommandParser parser = new CommandParser();
+    private boolean working = true;
 
     public CommandExecutor(DistributedMap state, Channel channel) {
         this.state = state;
@@ -40,7 +41,14 @@ public class CommandExecutor {
             case ALT_REMOVE:
                 executeAlternativeRemove(parsedCommand);
                 break;
+            case EMPTY:
+                executeEmpty(parsedCommand);
+                break;
+            case QUIT:
+                executeQuit(parsedCommand);
+                break;
             default:
+                executeUnrecognized(parsedCommand);
                 break;
         }
     }
@@ -54,7 +62,7 @@ public class CommandExecutor {
     }
 
     private void executeShow(Command parsedCommand) {
-        System.out.println(state);
+        System.out.println(state.toString());
     }
 
     private void executeContains(Command parsedCommand) {
@@ -62,7 +70,7 @@ public class CommandExecutor {
     }
 
     private void executePut(Command parsedCommand) {
-        String op = "put" + parsedCommand.getKey() + parsedCommand.getValue();
+        String op = "put " + parsedCommand.getKey() + " " + parsedCommand.getValue();
         state.put(parsedCommand.getKey(), parsedCommand.getValue());
         try {
             channel.send(new Message(null, null, op));
@@ -72,7 +80,7 @@ public class CommandExecutor {
     }
 
     private void executeRemove(Command parsedCommand) {
-        String op = "remove" + parsedCommand.getKey();
+        String op = "remove " + parsedCommand.getKey();
         state.remove(parsedCommand.getKey());
         try {
             channel.send(new Message(null, null, op));
@@ -85,9 +93,23 @@ public class CommandExecutor {
         state.put(parsedCommand.getKey(), parsedCommand.getValue());
     }
 
-
     private void executeAlternativeRemove(Command parsedCommand) {
         state.remove(parsedCommand.getKey());
     }
 
+    private void executeEmpty(Command parsedCommand) {
+        System.out.println("Empty command!");
+    }
+
+    private void executeUnrecognized(Command parsedCommand) {
+        System.out.println("Unrecognized command!");
+    }
+
+    private void executeQuit(Command parsedCommand) {
+        this.working = false;
+    }
+
+    public boolean isWorking() {
+        return working;
+    }
 }

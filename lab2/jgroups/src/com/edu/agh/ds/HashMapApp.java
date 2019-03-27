@@ -18,10 +18,9 @@ public class HashMapApp extends ReceiverAdapter {
     private CommandReceiver receiver;
 
     public static void main(String[] args) throws Exception {
-        System.setProperty("java.net.preferIPv4Stack","true");
+        System.setProperty("java.net.preferIPv4Stack", "true");
         new HashMapApp().start();
     }
-
 
     private void start() throws Exception {
         channel = new Channel();
@@ -35,10 +34,9 @@ public class HashMapApp extends ReceiverAdapter {
     }
 
 
-
     private void eventLoop() {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        while (true) {
+        while (executor.isWorking()) {
             try {
                 String command = br.readLine().toLowerCase();
                 executor.execute(command);

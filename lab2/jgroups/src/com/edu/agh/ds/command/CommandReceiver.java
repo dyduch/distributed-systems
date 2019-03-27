@@ -26,7 +26,7 @@ public class CommandReceiver extends ReceiverAdapter {
     }
 
     @Override
-    public void receive(Message msg){
+    public void receive(Message msg) {
         System.out.println(msg.getSrc() + ": " + msg.getObject());
         executor.execute("alt_" + msg.getObject());
     }

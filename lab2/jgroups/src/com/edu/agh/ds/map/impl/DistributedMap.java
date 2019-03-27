@@ -37,4 +37,11 @@ public class DistributedMap implements SimpleStringMap {
         this.hashMap.clear();
         this.hashMap.putAll(hashMap);
     }
+
+    @Override
+    public String toString() {
+        return "DistributedMap{" +
+                "hashMap=" + hashMap.toString() +
+                '}';
+    }
 }

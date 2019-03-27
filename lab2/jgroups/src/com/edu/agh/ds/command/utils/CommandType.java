@@ -8,7 +8,9 @@ public enum CommandType {
     ALT_REMOVE("alt_remove"),
     CONTAINS("contains"),
     SHOW("show"),
-    QUIT("quit");
+    QUIT("quit"),
+    EMPTY("empty"),
+    UNRECOGNIZED("unrecognized");
 
     private String text;
 
@@ -25,6 +27,6 @@ public enum CommandType {
             if(type.text.equalsIgnoreCase(text))
                 return type;
         }
-        return null;
+        return UNRECOGNIZED;
     }
 }
