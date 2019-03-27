@@ -2,10 +2,10 @@ package com.edu.agh.ds.command.utils;
 
 public enum CommandType {
     PUT("put"),
-    ALT_PUT("alt_put"),
+    ALT_PUT("alternativePut"),
     GET("get"),
     REMOVE("remove"),
-    ALT_REMOVE("alt_remove"),
+    ALT_REMOVE("alternativeRemove"),
     CONTAINS("contains"),
     SHOW("show"),
     QUIT("quit"),

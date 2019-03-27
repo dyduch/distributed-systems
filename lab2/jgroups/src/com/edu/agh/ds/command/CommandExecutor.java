@@ -1,9 +1,13 @@
 package com.edu.agh.ds.command;
 
 import com.edu.agh.ds.command.utils.CommandParser;
+import com.edu.agh.ds.command.utils.CommandType;
 import com.edu.agh.ds.map.impl.DistributedMap;
 import com.edu.agh.ds.utils.Channel;
 import org.jgroups.Message;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 public class CommandExecutor {
 
@@ -19,37 +23,13 @@ public class CommandExecutor {
 
     public void execute(String command) {
         Command parsedCommand = parser.parse(command);
-        switch (parsedCommand.getType()) {
-            case GET:
-                executeGet(parsedCommand);
-                break;
-            case SHOW:
-                executeShow(parsedCommand);
-                break;
-            case CONTAINS:
-                executeContains(parsedCommand);
-                break;
-            case PUT:
-                executePut(parsedCommand);
-                break;
-            case REMOVE:
-                executeRemove(parsedCommand);
-                break;
-            case ALT_PUT:
-                executeAlternativePut(parsedCommand);
-                break;
-            case ALT_REMOVE:
-                executeAlternativeRemove(parsedCommand);
-                break;
-            case EMPTY:
-                executeEmpty(parsedCommand);
-                break;
-            case QUIT:
-                executeQuit(parsedCommand);
-                break;
-            default:
-                executeUnrecognized(parsedCommand);
-                break;
+        Class<?> c = this.getClass();
+        String methodName = getMethodName(parsedCommand.getType());
+        try {
+            Method method = c.getDeclaredMethod(methodName, Command.class);
+            method.invoke(this, parsedCommand);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -107,6 +87,13 @@ public class CommandExecutor {
 
     private void executeQuit(Command parsedCommand) {
         this.working = false;
+    }
+
+    private String getMethodName(CommandType type) {
+        String typeText = type.getText();
+        return "execute"
+                + typeText.substring(0, 1).toUpperCase()
+                + typeText.substring(1);
     }
 
     public boolean isWorking() {
