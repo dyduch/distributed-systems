@@ -1,5 +1,6 @@
 package com.edu.agh.ds.utils;
 
+import org.jgroups.Address;
 import org.jgroups.JChannel;
 import org.jgroups.protocols.*;
 import org.jgroups.protocols.pbcast.*;
@@ -36,5 +37,10 @@ public class Channel extends JChannel {
                 .addProtocol(new STATE());
 
         stack.init();
+    }
+
+    @Override
+    public Address getAddress() {
+        return super.getAddress();
     }
 }
