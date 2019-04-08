@@ -7,4 +7,9 @@ public class Admin implements User {
     public void run() {
 
     }
+
+    @Override
+    public void setup() {
+
+    }
 }
