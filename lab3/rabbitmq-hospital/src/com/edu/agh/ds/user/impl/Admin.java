@@ -31,8 +31,7 @@ public class Admin implements User {
                     throws IOException {
                 String message = new String(body, StandardCharsets.UTF_8);
                 System.out.println(
-                        getDate(System.currentTimeMillis()) + " [" + properties.getUserId() + "] " +
-                                " " + message);
+                        getDate(System.currentTimeMillis()) + " " + message);
             }
         };
 

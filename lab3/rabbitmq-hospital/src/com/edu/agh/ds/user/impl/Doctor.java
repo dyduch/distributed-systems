@@ -7,13 +7,12 @@ import com.rabbitmq.client.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class Doctor implements User, AutoCloseable {
+public class Doctor implements User {
 
     private static final String TECH_EXCHANGE = "tech_exchange";
     private static final String ADMIN_EXCHANGE = "admin_exchange";
@@ -77,10 +76,5 @@ public class Doctor implements User, AutoCloseable {
             e.printStackTrace();
         }
 
-    }
-
-    @Override
-    public void close() throws Exception {
-        connection.close();
     }
 }
