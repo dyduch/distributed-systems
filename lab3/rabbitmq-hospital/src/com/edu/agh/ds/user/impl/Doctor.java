@@ -1,20 +1,21 @@
 package com.edu.agh.ds.user.impl;
 
 import com.edu.agh.ds.user.User;
-import com.rabbitmq.client.BuiltinExchangeType;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
+import com.edu.agh.ds.user.impl.threads.DoctorsReceiveThread;
+import com.rabbitmq.client.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
-public class Doctor implements User {
+public class Doctor implements User, AutoCloseable {
 
-    private static final String DOC_EXCHANGE_NAME = "doc_exchange";
+    private static final String TECH_EXCHANGE = "tech_exchange";
+
+    private static String QUEUE;
 
     private Connection connection;
     private Channel channel;
@@ -25,23 +26,34 @@ public class Doctor implements User {
 
     @Override
     public void run() {
-        while (true) {
+
+        final String corrId = UUID.randomUUID().toString();
+        DoctorsReceiveThread thread = new DoctorsReceiveThread(QUEUE, channel, corrId);
+        thread.run();
+
             try {
-                channel.exchangeDeclare(DOC_EXCHANGE_NAME, BuiltinExchangeType.DIRECT);
+                AMQP.BasicProperties props = new AMQP.BasicProperties
+                        .Builder()
+                        .correlationId(corrId)
+                        .replyTo(QUEUE)
+                        .build();
+
                 BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-                System.out.println("Enter name: ");
-                String name = br.readLine();
-                System.out.println("Enter type: ");
-                String type = br.readLine();
 
-                String message = name + " " + type;
+                while(true) {
+                    System.out.println("Enter patient's name: ");
+                    String name = br.readLine();
+                    System.out.println("Enter medical type: ");
+                    String type = br.readLine().toLowerCase();
 
-                channel.basicPublish(DOC_EXCHANGE_NAME, type, null, message.getBytes(StandardCharsets.UTF_8));
-                System.out.println("Sent: " + message);
+                    String message = name + " " + type;
+
+                    channel.basicPublish(TECH_EXCHANGE, type, props, message.getBytes(StandardCharsets.UTF_8));
+                    System.out.println("Sent: " + message);
+                }
 
             } catch (IOException e) {
                 e.printStackTrace();
-            }
         }
     }
 
@@ -53,11 +65,17 @@ public class Doctor implements User {
         try {
             this.connection = factory.newConnection();
             this.channel = connection.createChannel();
+            channel.exchangeDeclare(TECH_EXCHANGE, BuiltinExchangeType.DIRECT);
+            QUEUE = channel.queueDeclare().getQueue();
 
         } catch (IOException | TimeoutException e) {
             e.printStackTrace();
         }
 
+    }
 
+    @Override
+    public void close() throws Exception {
+        connection.close();
     }
 }

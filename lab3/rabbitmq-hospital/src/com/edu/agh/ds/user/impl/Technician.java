@@ -1,6 +1,8 @@
 package com.edu.agh.ds.user.impl;
 
+import com.edu.agh.ds.Examination;
 import com.edu.agh.ds.user.User;
+import com.edu.agh.ds.user.impl.threads.TechniciansReceiveThread;
 import com.rabbitmq.client.*;
 ;import java.io.BufferedReader;
 import java.io.IOException;
@@ -8,9 +10,11 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeoutException;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public class Technician implements User {
 
-    private static final String DOC_EXCHANGE_NAME = "doc_exchange";
+    private static final String TECH_EXCHANGE = "tech_exchange";
 
     private String firstType;
     private String secondType;
@@ -30,27 +34,21 @@ public class Technician implements User {
 
     @Override
     public void run() throws IOException {
-        channel.exchangeDeclare(DOC_EXCHANGE_NAME, BuiltinExchangeType.DIRECT);
-        String queueName = channel.queueDeclare().getQueue();
-        channel.queueBind(queueName, DOC_EXCHANGE_NAME, firstType);
-        channel.queueBind(queueName, DOC_EXCHANGE_NAME, secondType);
 
-        Consumer consumer = new DefaultConsumer(channel) {
-            @Override
-            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
-                String message = new String(body, StandardCharsets.UTF_8);
-                System.out.println("Received: " + message);
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        };
+        TechniciansReceiveThread firstTypeThread =
+                new TechniciansReceiveThread(firstType + "_queue", channel);
+        TechniciansReceiveThread secondTypeThread =
+                new TechniciansReceiveThread(secondType + "_queue", channel);
 
-        System.out.println("Waiting for messages...");
+        channel.queueDeclare(firstType + "_queue", true, false, false, null);
+        channel.queueBind(firstType + "_queue", TECH_EXCHANGE, firstType);
+        channel.queueDeclare(secondType + "_queue", true, false, false, null);
+        channel.queueBind(secondType + "_queue", TECH_EXCHANGE, secondType);
+
         channel.basicQos(1);
-        channel.basicConsume(queueName, true, consumer);
+
+        firstTypeThread.run();
+        secondTypeThread.run();
     }
 
 
@@ -63,14 +61,34 @@ public class Technician implements User {
             this.connection = factory.newConnection();
             this.channel = connection.createChannel();
 
-            System.out.println("Enter type: ");
-            firstType = br.readLine();
-            System.out.println("Enter type: ");
-            secondType = br.readLine();
+            channel.exchangeDeclare(TECH_EXCHANGE, BuiltinExchangeType.DIRECT);
+
+            setFirstType(br);
+            setSecondType(br);
+
+            System.out.println(this.getClass().getSimpleName() + " initialised\nWaiting fro messages...");
 
         } catch (IOException | TimeoutException e) {
             e.printStackTrace();
         }
 
+    }
+
+    private void setFirstType(BufferedReader br) throws IOException {
+        firstType = enterType(br);
+    }
+
+    private void setSecondType(BufferedReader br) throws IOException {
+        secondType = enterType(br);
+    }
+
+    private String enterType(BufferedReader br) throws IOException {
+        System.out.println("Enter type: ");
+        String type = br.readLine().toLowerCase();
+        while(Examination.fromString(type).equals(Examination.WRONG)){
+            System.out.println("Wrong type, re-enter type: ");
+            type = br.readLine().toLowerCase();
+        }
+        return type;
     }
 }
