@@ -1,6 +1,7 @@
 package com.edu.agh.ds;
 
 
+import com.edu.agh.ds.user.impl.Admin;
 import com.edu.agh.ds.user.impl.Doctor;
 import com.edu.agh.ds.user.impl.Technician;
 
@@ -16,6 +17,8 @@ public class Main {
             new Doctor().run();
         } else if(typeOfService.equalsIgnoreCase("tech")){
             new Technician().run();
+        } else {
+            new Admin().run();
         }
     }
 }

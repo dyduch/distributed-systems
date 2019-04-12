@@ -11,9 +11,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public class Doctor implements User, AutoCloseable {
 
     private static final String TECH_EXCHANGE = "tech_exchange";
+    private static final String ADMIN_EXCHANGE = "admin_exchange";
 
     private static String QUEUE;
 
@@ -31,29 +34,31 @@ public class Doctor implements User, AutoCloseable {
         DoctorsReceiveThread thread = new DoctorsReceiveThread(QUEUE, channel, corrId);
         thread.run();
 
-            try {
-                AMQP.BasicProperties props = new AMQP.BasicProperties
-                        .Builder()
-                        .correlationId(corrId)
-                        .replyTo(QUEUE)
-                        .build();
+        try {
+            AMQP.BasicProperties props = new AMQP.BasicProperties
+                    .Builder()
+                    .correlationId(corrId)
+                    .replyTo(QUEUE)
+                    .build();
 
-                BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-                while(true) {
-                    System.out.println("Enter patient's name: ");
-                    String name = br.readLine();
-                    System.out.println("Enter medical type: ");
-                    String type = br.readLine().toLowerCase();
+            while (true) {
+                System.out.println("Enter patient's name: ");
+                String name = br.readLine();
+                System.out.println("Enter medical type: ");
+                String type = br.readLine().toLowerCase();
 
-                    String message = name + " " + type;
+                String message = name + " " + type;
 
-                    channel.basicPublish(TECH_EXCHANGE, type, props, message.getBytes(StandardCharsets.UTF_8));
-                    System.out.println("Sent: " + message);
-                }
+                channel.basicPublish(TECH_EXCHANGE, type, props, message.getBytes(UTF_8));
+                System.out.println("Sent: " + message);
+                channel.basicPublish(ADMIN_EXCHANGE, "", null,
+                        ("Doctor sent: " + message).getBytes(UTF_8));
+            }
 
-            } catch (IOException e) {
-                e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

@@ -9,6 +9,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class DoctorsReceiveThread extends Thread {
 
+    private static final String ADMIN_EXCHANGE = "admin_exchange";
+
     private String queueName;
     private Channel channel;
     private String corrId;
@@ -26,6 +28,8 @@ public class DoctorsReceiveThread extends Thread {
                 if (delivery.getProperties().getCorrelationId().equals(corrId)) {
                     String message = new String(delivery.getBody(), UTF_8);
                     System.out.println("Received: " + message);
+                    channel.basicPublish(ADMIN_EXCHANGE, "", null,
+                            ("Doctor received: " + message).getBytes(UTF_8));
                 }
             }, consumerTag -> {
             });

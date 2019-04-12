@@ -15,6 +15,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class Technician implements User {
 
     private static final String TECH_EXCHANGE = "tech_exchange";
+    private static final String ADMIN_EXCHANGE = "admin_exchange";
 
     private String firstType;
     private String secondType;
@@ -22,13 +23,7 @@ public class Technician implements User {
     private Connection connection;
     private Channel channel;
 
-    public Technician(){
-        this.setup();
-    }
-
-    public Technician(String... types) {
-        this.firstType = types[0];
-        this.secondType = types[1];
+    public Technician() {
         this.setup();
     }
 
@@ -66,7 +61,8 @@ public class Technician implements User {
             setFirstType(br);
             setSecondType(br);
 
-            System.out.println(this.getClass().getSimpleName() + " initialised\nWaiting fro messages...");
+            System.out.println(this.getClass().getSimpleName() + " initialised\nWaiting for " +
+                    "messages...");
 
         } catch (IOException | TimeoutException e) {
             e.printStackTrace();
@@ -85,7 +81,7 @@ public class Technician implements User {
     private String enterType(BufferedReader br) throws IOException {
         System.out.println("Enter type: ");
         String type = br.readLine().toLowerCase();
-        while(Examination.fromString(type).equals(Examination.WRONG)){
+        while (Examination.fromString(type).equals(Examination.WRONG)) {
             System.out.println("Wrong type, re-enter type: ");
             type = br.readLine().toLowerCase();
         }

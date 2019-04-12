@@ -12,6 +12,8 @@ public class TechniciansReceiveThread extends Thread {
     private Channel channel;
     private DeliverCallback deliverCallback;
 
+    private static final String ADMIN_EXCHANGE = "admin_exchange";
+
     public TechniciansReceiveThread(String queueName, Channel channel) {
         this.queueName = queueName;
         this.channel = channel;
@@ -22,16 +24,21 @@ public class TechniciansReceiveThread extends Thread {
                     .build();
 
             String message = "";
-            try{
+            try {
                 message = new String(delivery.getBody(), UTF_8);
                 System.out.println("Received: " + message);
+                channel.basicPublish(ADMIN_EXCHANGE, "", null,
+                        ("Technician received: " + message).getBytes(UTF_8));
                 message += " [DONE]";
                 sleep(2000);
             } catch (RuntimeException | InterruptedException e) {
                 System.out.println(" [.] " + e.toString());
             } finally {
-                channel.basicPublish("", delivery.getProperties().getReplyTo(), props, message.getBytes(UTF_8));
+                channel.basicPublish("", delivery.getProperties().getReplyTo(), props,
+                        message.getBytes(UTF_8));
                 System.out.println("Sent: " + message);
+                channel.basicPublish(ADMIN_EXCHANGE, "", null,
+                        ("Technician sent: " + message).getBytes(UTF_8));
                 channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
             }
         };
@@ -40,7 +47,8 @@ public class TechniciansReceiveThread extends Thread {
     @Override
     public void run() {
         try {
-            channel.basicConsume(queueName, false, deliverCallback, consumerTag -> { });
+            channel.basicConsume(queueName, false, deliverCallback, consumerTag -> {
+            });
         } catch (IOException e) {
             e.printStackTrace();
         }
