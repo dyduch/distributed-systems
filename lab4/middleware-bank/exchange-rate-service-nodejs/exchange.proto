@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "sr.grpc.gen";
+option java_outer_classname = "ExchangeProto";
+option objc_class_prefix = "EXC";
+
+package exchangerateservice;
+
+service ExchangeRateService {
+    rpc GetExchangeRates(ExchangeRateRq) returns (stream ExchangeRateRs) {};
+}
+
+enum Currency {
+    PLN = 0;
+    USD = 1;
+    AUD = 2;
+    GBP = 3;
+    EUR = 4;
+    CHF = 5;
+}
+
+message ExchangeRate {
+    Currency currency = 1;
+    double rate = 2;
+}
+
+message ExchangeRateRq {
+    Currency domesticCurrency = 1;
+    repeated Currency currencies = 2;
+}
+
+message ExchangeRateRs {
+    ExchangeRate exchangeRate = 1;
+}

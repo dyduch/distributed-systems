@@ -136,6 +136,16 @@ lab3/rabbitmq-hospital/src/rabbitmq-hospital.iml
 lab4/grpc-java
 lab4/ice
 lab4/protoc-gen-grpc-java
+lab4/*/generated
+*gen*
+*generated*
+lab4/middleware-bank/bank-service/bank-service.iml
+lab4/middleware-bank/bank-service/lib/
+lab4/middleware-bank/exchange-rate-service-nodejs/node_modules/
+lab4/middleware-bank/exchange-rate-service-nodejs/package-lock.json
+lab4/middleware-bank/exchange-rate-service-nodejs/package.json
+lab4/middleware-bank/exchange-rate-service/
+
 
 .gradle
 /build/
