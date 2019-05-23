@@ -1,0 +1,3 @@
+game_of_thrones 20
+clash_of_kings 30
+dance_with_dragons 50

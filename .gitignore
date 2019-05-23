@@ -145,6 +145,9 @@ lab4/middleware-bank/exchange-rate-service-nodejs/node_modules/
 lab4/middleware-bank/exchange-rate-service-nodejs/package-lock.json
 lab4/middleware-bank/exchange-rate-service-nodejs/package.json
 lab4/middleware-bank/exchange-rate-service/
+lab5/AkkaLab*
+lab5/akka.pdf
+lab5/akka-library/build
 
 
 .gradle
