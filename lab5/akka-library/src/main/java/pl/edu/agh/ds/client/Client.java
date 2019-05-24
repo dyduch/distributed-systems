@@ -10,6 +10,9 @@ import akka.actor.ActorSystem;
 import akka.actor.Props;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import pl.edu.agh.ds.requests.OrderRequest;
+import pl.edu.agh.ds.requests.Request;
+import pl.edu.agh.ds.requests.SearchRequest;
 
 public class Client {
     public static void main(String[] args) throws IOException {
@@ -24,10 +27,22 @@ public class Client {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         while (true) {
             String line = br.readLine();
+            Request request;
             if (line.equals("q")) {
                 break;
             }
-            clientActor.tell(line, null);
+            if(line.startsWith("search")){
+                String title = br.readLine();
+                request = new SearchRequest(title);
+                clientActor.tell(request, null);
+            }
+
+            if(line.startsWith("order")){
+                String title = br.readLine();
+                request = new OrderRequest(title);
+                clientActor.tell(request, null);
+            }
+            //clientActor.tell(line, null);
         }
 
         system.terminate();
